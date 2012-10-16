@@ -1,0 +1,94 @@
+<html>
+<head>
+    <style>
+    </style>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.8.23/jquery-ui.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.3.3/underscore-min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/backbone.js/0.9.2/backbone-min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/highcharts/2.3.1/highcharts.js"></script>
+    <script src="gears.js"></script>
+    <script src="data.js"></script>
+    <script>
+        $(function(){
+            simulation = new $g.SimulationView({
+                car: new $g.CarModel({
+                    engine: $g.data.engine.sbf347,
+                    transmission: $g.data.transmission.t56short,
+                    drivetrain: $g.data.drivetrain.custom,
+                    wheel: $g.data.wheel.custom
+                })
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Gear Utilities</h1>
+    <section><h2>Transmission</h2>
+    <ul>
+        <li><label>1st</label><input value="2.66" type="text"/></li>
+        <li><label>2nd</label><input value="1.73" type="text"/></li>
+        <li><label>3rd</label><input value="1.3" type="text"/></li>
+        <li><label>4th</label><input value="1.0" type="text"/></li>
+        <li><label>5th</label><input value="0.8" type="text"/></li>
+        <li><label>6th</label><input value="0.62" type="text"/></li>
+    </ul>
+    or
+    <select>
+        <option value=''>Custom</option>
+        <option value='T56FordShort'>T56 Magnum Ford Aftermarket - Short Ratio</option>
+        <option value="T56FordLong">T56 Magnum Ford Aftermarket - Long Ratio"</option>
+    </select>
+    <div id="gearchart" style="height: 400px; width: 800px;"></div>
+    </section>
+    <section><h2>Drivetrain</h2>
+    <ul>
+        <li><label>Final Drive Ratio</label><input value="3.07" type="text"/></li>
+        <li><label>Drivetrain Losses</label><input value="15" type="text"/>%</li>
+    </ul>
+    </section>
+    <section style="display:none"><h2>Aerodynamic</h2>
+    <ul>
+        <li><label>Frontal Area</label><input value="16.6" type="text"/></li>
+        <li><label>Drag Coefficient</label><input value="0.65" type="text"/></li>
+    </ul>
+    </section>
+    <section style="display:none"><h2>Car Dynamics</h2>
+    <ul>
+        <li><label>Roll Center</label><input value="2.5" type="text"/></li>
+        <li><label>Corner Weights</label><input value="0.65" type="text"/></li>
+        <li><label>Total Weight</label><input value="0.65" type="text"/></li>
+        <li><label>Front/Rear %</label><input value="0.65" type="text"/></li>
+    </ul>
+    </section>
+    <section class="engine"><h2>Engine</h2>
+    <ul class="dynoform">
+        <li><label>Torque</label><input value="250" type="text"/><label>at RPM</label><input value="1500" type="text"/></li>
+        <li><label>Torque</label><input value="450" type="text"/><label>at RPM</label><input value="5300" type="text"/></li>
+        <li><label>Torque</label><input value="350" type="text"/><label>at RPM</label><input value="6500" type="text"/></li>
+    </ul>
+    <div id="dynochart" style="height: 400px; width: 800px;"></div>
+    </section>
+    <section style="display:none"><h2>Tires</h2>
+    <ul>
+        <li>Diameter<input value="17" type="text"/></li>
+    </ul>
+    or
+    <ul>
+        <li>Wheel Size<input value="17" type="text"/></li>
+        <li>Tire Width<input value="315" type="text"/></li>
+        <li>Height Ratio<input value="35" type="text"/></li>
+    </ul>
+    </section>
+    <section><h2>Output</h2>
+    <ul>
+        <li>Theoretical Top Speed:</li>
+        <li>Gearing Chart:</li>
+        <li>Accel Chart:</li>
+        <li>Grip Chart:</li>
+        <li>'Dyno' Chart:</li>
+        <li>To JSON:</li>
+    </ul>
+    </section>
+</body>
+</html>
