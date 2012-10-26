@@ -2,10 +2,10 @@ var $g = $g || {};
 
 $g.TransmissionModel = Backbone.Model.extend({
      //gears 1-7.
-    initialize: function(){
-        _.bindAll(this,
-        );
-    }
+    // initialize: function(){
+    //     _.bindAll(this,
+    //     );
+    // }
 });
 
 $g.DrivetrainModel = Backbone.Model.extend({
@@ -30,7 +30,7 @@ $g.DynoPointModel = Backbone.Model.extend({
 });
 $g.DynoCollection = Backbone.Collection.extend({
     comparator: function(point){
-        return point.rpm;
+        return -point.rpm;
     }
 });
 $g.EngineModel = Backbone.Model.extend({
@@ -89,19 +89,25 @@ $g.EngineModel = Backbone.Model.extend({
 $g.CarModel = Backbone.Model.extend({
 // MPH function receives RPM, Tire, TRatio, RearRatio and returns MPH
 // Tire is in inch diameter.
-    mph: function(rpm, Tire, TRatio, RearRatio) {
-        return (rpm*Tire)/(TRatio*RearRatio*336);
+    mph: function(rpm, tire, t_ratio, rear_ratio) {
+        return (rpm*tire)/(t_ratio*rear_ratio*336);
     },
-    gear_series: function(){
+    gear_series: function(t_ratio){
         //chart the mph of gear ratios through the rpm range of the engine
         var redline = this.get('engine').max_rpm();
-        
+        var tire = this.get('wheel').get('diameter');
+        var rear_ratio = this.get('drivetrain').get('final');
+        var self = this;
+        return _.range(0, redline+redline/30, redline/30).map(function(rpm){
+            return [rpm, self.mph(rpm, tire, t_ratio, rear_ratio)];
+        });
     },
     gear_chart_series: function(){
-        this.get('gears').map(function(ratio, gear_number){
+        var self = this;
+        return this.get('transmission').get('gears').map(function(ratio, gear_number){
             return {
                 name: gear_number+1,
-                data: mph_series
+                data: self.gear_series(ratio)
             }
         })
     }
@@ -115,6 +121,7 @@ $g.SimulationView = Backbone.View.extend({
         );
         //gather up an initial set of models
         this.car = this.options.car;
+        console.log(this.car.toJSON());
         this.render_charts();
     },
     render_charts: function(){
@@ -164,7 +171,7 @@ $g.SimulationView = Backbone.View.extend({
         });
     },
     render_gearchart: function(engine, transmission, drivetrain, wheel){
-
+        console.log("rendering");
         this.gearchart = new Highcharts.Chart({
             chart: {
                 renderTo: 'gearchart',
@@ -190,7 +197,7 @@ $g.SimulationView = Backbone.View.extend({
                     }
                 }
             },
-            series: this.transmission.gear_chart_series()
+            series: this.car.gear_chart_series()
             //one series per gear?
             //speed? RPM?
         });
