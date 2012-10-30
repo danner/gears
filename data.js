@@ -12,8 +12,9 @@ $g.data.transmission.t56short = new $g.TransmissionModel({
 $g.data.engine.sbf347 = new $g.EngineModel({
 	dyno: new $g.DynoCollection([
 		new $g.DynoPointModel({torque: 0, rpm: 0}),
-		new $g.DynoPointModel({torque: 250, rpm: 1500}),
-		new $g.DynoPointModel({torque: 450, rpm: 5300}),
+		new $g.DynoPointModel({torque: 350, rpm: 1500}),
+		new $g.DynoPointModel({torque: 390, rpm: 4700}),
+		new $g.DynoPointModel({torque: 407, rpm: 5300}),
 		new $g.DynoPointModel({torque: 350, rpm: 6500}),
 		new $g.DynoPointModel({torque: 0, rpm: 7000})
 	])

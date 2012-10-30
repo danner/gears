@@ -1,5 +1,29 @@
 var $g = $g || {};
 
+$g.slider = function(el, args){
+    defaults = {
+        animate: true,
+        range: "min",
+        value: 50,
+        min: 0,
+        max: 100,
+        step: 1,
+
+        //this gets a live reading of the value and prints it on the page
+        slide: function( event, ui ) {
+            $(el).children(".slider-result").html( ui.value );
+        },
+
+        change: function(event, ui) {
+            console.log(event, ui);
+        }
+    }
+    //update defaults with any passed in options
+    args = _.extend(defaults, args);
+    //and make the slider
+    $(el).slider(args);
+};
+
 $g.TransmissionModel = Backbone.Model.extend({
      //gears 1-7.
     // initialize: function(){
@@ -112,6 +136,46 @@ $g.CarModel = Backbone.Model.extend({
         })
     }
 });
+
+//***********
+//   Views
+//***********
+$g.transmissionView = Backbone.View.extend({
+    //controls the forms for the transmission.
+    el: 'ol.transmissionform',
+    initialize: function(){
+        _.bindAll(this,
+            'change_gear_ratio'
+        );
+        this.transmission = this.options.transmission;
+    },
+    render: function() {
+        this.$el.html("");
+        var self = this;
+        _.each(this.transmission.get('gears'), function(gear, name) {
+            //probably split out into function.
+            self.$el.append("<li class='slider gear-"+name+"'><div class='slider-result'>"+gear+"</div></li>");
+            $g.slider(self.$('li.gear-'+name), {
+                max: 3.0,
+                step: 0.01,
+                value: gear,
+                change: self.change_gear_ratio
+            });
+        });
+    },
+    change_gear_ratio: function(event, ui){
+        var gear_element = $(ui.handle).parent();
+        var gears = this.transmission.get('gears');
+        var index = gear_element.index('li');
+        gears[index] = ui.value;
+        console.log(index);
+        console.log(gears);
+        this.transmission.set('gears', gears);
+    }
+});
+
+
+
 $g.SimulationView = Backbone.View.extend({
 //controls the overall actions of the page.
     initialize: function(){
@@ -119,10 +183,15 @@ $g.SimulationView = Backbone.View.extend({
             'render_charts',
             'render_dynochart'
         );
+
         //gather up an initial set of models
         this.car = this.options.car;
-        console.log(this.car.toJSON());
+        console.log(this.car.get('transmission'));
+        this.transmission_view = new $g.transmissionView({transmission: this.car.get('transmission')});
+        this.transmission_view.render();
         this.render_charts();
+
+        this.car.get('transmission').bind('change', this.render_charts, this);
     },
     render_charts: function(){
         this.render_dynochart(this.car.get('engine'));
@@ -171,7 +240,6 @@ $g.SimulationView = Backbone.View.extend({
         });
     },
     render_gearchart: function(engine, transmission, drivetrain, wheel){
-        console.log("rendering");
         this.gearchart = new Highcharts.Chart({
             chart: {
                 renderTo: 'gearchart',
