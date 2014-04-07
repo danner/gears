@@ -17,11 +17,20 @@ $g.slider = function(el, args){
         change: function(event, ui) {
             console.log(event, ui);
         }
-    }
+    };
     //update defaults with any passed in options
     args = _.extend(defaults, args);
     //and make the slider
     $(el).slider(args);
+};
+$g.lerp = function(a, b, t) {
+    var len = a.length;
+    if(b.length != len) return;
+
+    var x = [];
+    for(var i = 0; i < len; i++)
+        x.push(a[i] + t * (b[i] - a[i]));
+    return x;
 };
 
 $g.TransmissionModel = Backbone.Model.extend({
@@ -69,13 +78,13 @@ $g.EngineModel = Backbone.Model.extend({
     },
     //list of rpms to hp.
     torque: function(rpm){
-        var insertionIndex = _.sortedIndex(this.dyno, rpm, function(point){return point.get('rpm')});
+        var insertionIndex = _.sortedIndex(this.dyno, rpm, function(point){return point.get('rpm');});
         var larger = this.dyno.at(insertionIndex);
         var smaller;
         if(larger.get('rpm') == rpm){
             //exact match? take it.
             return larger.get('torque');
-        }else if(insertionIndex == 0){
+        }else if(insertionIndex === 0){
             //lower than low
             alert("lower than lowest possible torque value. impressive.");
             return 0;
@@ -86,15 +95,22 @@ $g.EngineModel = Backbone.Model.extend({
         }else{
             //between two values
             smaller = this.dyno.at(insertionIndex-1);
-            //linear interpolate
+            var step = larger - smaller;
+            var ratio = rpm-smaller/step;
+            return $g.lerp(smaller, larger, ratio);
+
         }
+    },
+    rpm_series: function(){
+        this.get('dyno').map(function(point){
+            return point.get('rpm');
+        });
     },
     torque_series: function(){
         //gives back torque in [[rpm, torque], [rpm2, torque2]]
         return this.get('dyno').map(function(point){
-            var plot = [point.get('rpm'), point.get('torque')];
-            return plot;
-        }).reverse();
+            return point.get('torque');
+        });
     },
     hp: function(rpm){
         return this.torque(rpm) * rpm / 5252;
@@ -102,9 +118,8 @@ $g.EngineModel = Backbone.Model.extend({
     hp_series: function(){
         //gives back torque in [[rpm, torque], [rpm2, torque2]]
         return this.get('dyno').map(function(point){
-            var plot = [point.get('rpm'), point.get('hp')];
-            return plot;
-        }).reverse();
+            return point.get('hp');
+        });
     },
     max_rpm: function(){
         return this.get('dyno').last().get('rpm');
@@ -116,24 +131,25 @@ $g.CarModel = Backbone.Model.extend({
     mph: function(rpm, tire, t_ratio, rear_ratio) {
         return (rpm*tire)/(t_ratio*rear_ratio*336);
     },
+    rpm_series: function(){
+        var redline = this.get('engine').max_rpm();
+        return _.range(0, redline+100, 200);
+    },
     gear_series: function(t_ratio){
         //chart the mph of gear ratios through the rpm range of the engine
         var redline = this.get('engine').max_rpm();
         var tire = this.get('wheel').get('diameter');
         var rear_ratio = this.get('drivetrain').get('final');
         var self = this;
-        return _.range(0, redline+redline/30, redline/30).map(function(rpm){
-            return [rpm, self.mph(rpm, tire, t_ratio, rear_ratio)];
+        return self.rpm_series().map(function(rpm){
+            return self.mph(rpm, tire, t_ratio, rear_ratio);
         });
     },
     gear_chart_series: function(){
         var self = this;
         return this.get('transmission').get('gears').map(function(ratio, gear_number){
-            return {
-                name: gear_number+1,
-                data: self.gear_series(ratio)
-            }
-        })
+            return ['gear '+(gear_number+1)].concat(self.gear_series(ratio));
+        });
     }
 });
 
@@ -143,6 +159,9 @@ $g.CarModel = Backbone.Model.extend({
 $g.transmissionView = Backbone.View.extend({
     //controls the forms for the transmission.
     el: 'ol.transmissionform',
+    events: {
+        'mouseup .transmissionform': 'change_gear_ratio'
+    },
     initialize: function(){
         _.bindAll(this,
             'change_gear_ratio'
@@ -168,8 +187,6 @@ $g.transmissionView = Backbone.View.extend({
         var gears = this.transmission.get('gears');
         var index = gear_element.index('li');
         gears[index] = ui.value;
-        console.log(index);
-        console.log(gears);
         this.transmission.set('gears', gears);
     }
 });
@@ -186,7 +203,6 @@ $g.SimulationView = Backbone.View.extend({
 
         //gather up an initial set of models
         this.car = this.options.car;
-        console.log(this.car.get('transmission'));
         this.transmission_view = new $g.transmissionView({transmission: this.car.get('transmission')});
         this.transmission_view.render();
         this.render_charts();
@@ -203,71 +219,31 @@ $g.SimulationView = Backbone.View.extend({
         );
     },
     render_dynochart: function(engine){
-        this.dynochart = new Highcharts.Chart({
-            chart: {
-                renderTo: 'dynochart',
-                type: 'line'
-            },
-            title: {
-                text: 'Dyno Chart'
-            },
-            xAxis: {
-                title: {
-                    text: 'RPM'
-                }
-            },
-            yAxis: {
-                title: {
-                    text: 'Torque/HP'
-                }
-            },
-            plotOptions: {
-                series: {
-                    marker: {
-                        enabled: true,
-                    }
-                }
-            },
-            series: [
-                {
-                    name: 'Torque',
-                    data: engine.torque_series()
-                }, {
-                    name: 'Horsepower',
-                    data: engine.hp_series()
-                }
-            ]
+        var chart = c3.generate({
+            bindto: '#dynochart',
+            data: {
+                x: 'rpm',
+                columns: [
+                    ['rpm'].concat(this.car.rpm_series()),
+                    ['Torque'].concat(engine.torque_series()),
+                    ['Horsepower'].concat(engine.hp_series())
+                ]
+            }
         });
     },
     render_gearchart: function(engine, transmission, drivetrain, wheel){
-        this.gearchart = new Highcharts.Chart({
-            chart: {
-                renderTo: 'gearchart',
-                type: 'line'
+        console.log(engine.max_rpm());
+        var chart = c3.generate({
+            bindto: '#gearchart',
+            data: {
+                x: 'rpm',
+                columns: [['rpm'].concat(this.car.rpm_series())].concat(this.car.gear_chart_series())
             },
-            title: {
-                text: 'Gear Chart'
-            },
-            xAxis: {
-                title: {
-                    text: 'RPM'
+            grid: {
+                x: {
+                    lines: [{value: engine.max_rpm(), text: 'Redline'}]
                 }
-            },
-            yAxis: {
-                title: {
-                    text: 'Speed mph'
-                }
-            },
-            plotOptions: {
-                series: {
-                    marker: {
-                        enabled: true,
-                    }
-                }
-            },
-            series: this.car.gear_chart_series()
-            //one series per gear?
-            //speed? RPM?
+            }
         });
     }
 });
