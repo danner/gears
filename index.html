@@ -1,0 +1,89 @@
+<html ng-app="gears">
+<head>
+    <meta charset="utf-8">  <!-- it's important for d3.js -->
+
+    <link rel="stylesheet" href="bower_components/nvd3/build/nv.d3.css">
+    <link href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="gears.css" rel="stylesheet">
+
+    <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/d3/d3.js"></script>
+    <script src="bower_components/nvd3/build/nv.d3.js"></script> <!-- or use another assembly -->
+    <script src="bower_components/angular-nvd3/dist/angular-nvd3.js"></script>
+
+
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-animate.js"></script>
+    <script src="http://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.14.3.js"></script>
+
+    <script src="gears.js"></script>
+    <script src="data.js"></script>
+    <script src="input-ctrl.js"></script>
+    <script src="dyno-chart-ctrl.js"></script>
+</head>
+<body>
+<section class="input" ng-controller="InputCtrl">
+  <script type="text/ng-template" id="group-template.html">
+    <div class="panel {{panelClass || 'panel-default'}}">
+      <div class="panel-heading">
+        <h4 class="panel-title" style="color:#fa39c3">
+          <a href tabindex="0" class="accordion-toggle" ng-click="toggleOpen()" uib-accordion-transclude="heading"><span
+            ng-class="{'text-muted': isDisabled}">{{heading}}</span></a>
+        </h4>
+      </div>
+      <div class="panel-collapse collapse" uib-collapse="!isOpen">
+        <div class="panel-body" style="text-align: right" ng-transclude></div>
+      </div>
+    </div>
+  </script>
+  <uib-accordion>
+    <uib-accordion-group heading="Engine" is-open="true">
+        Engine
+    </uib-accordion-group>
+    <uib-accordion-group heading="Transmission">
+        Transmission
+    </uib-accordion-group>
+    <uib-accordion-group heading="Final Drive">
+        Final
+    </uib-accordion-group>
+    <uib-accordion-group heading="Wheels &amp; Tires">
+        Wheels
+    </uib-accordion-group>
+    <uib-accordion-group heading="Aerodynamics">
+        Aerodynamics
+    </uib-accordion-group>
+    <uib-accordion-group heading="Car Dynamics">
+        Car
+    </uib-accordion-group>
+    <uib-accordion-group heading="Aerodynamics">
+        Aerodynamics
+    </uib-accordion-group>
+  </uib-accordion>
+</section>
+<section class="chart" ng-controller="ChartCtrl">
+  <script type="text/ng-template" id="group-template.html">
+    <div class="panel {{panelClass || 'panel-default'}}">
+      <div class="panel-heading">
+        <h4 class="panel-title" style="color:#fa39c3">
+          <a href tabindex="0" class="accordion-toggle" ng-click="toggleOpen()" uib-accordion-transclude="heading"><span
+            ng-class="{'text-muted': isDisabled}">{{heading}}</span></a>
+        </h4>
+      </div>
+      <div class="panel-collapse collapse" uib-collapse="!isOpen">
+        <div class="panel-body" style="text-align: right" ng-transclude></div>
+      </div>
+    </div>
+  </script>
+  <uib-accordion>
+    <uib-accordion-group heading="Dyno" is-open="true">
+        Dyno
+    </uib-accordion-group>
+    <uib-accordion-group heading="Speed">
+        Speed
+    </uib-accordion-group>
+    <uib-accordion-group heading="Gearing">
+        Gearing
+    </uib-accordion-group>
+  </uib-accordion>
+</section>
+</body>
+</html>

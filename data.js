@@ -1,31 +1,62 @@
-$g = $g || {};
-$g.data = $g.data || {};
-$g.data.transmission = $g.data.transmission || {};
-$g.data.engine = $g.data.engine || {};
-$g.data.drivetrain = $g.data.drivetrain || {};
-$g.data.wheel = $g.data.wheel || {};
+var transmissions = [
+	{
+		name: "t56-short",
+		gears: [2.66, 1.73, 1.3, 1.0, 0.8, 0.62]
+	},
+	{
+		name: "NA8A",
+		gears: [ 3.136, 1.888, 1.33, 1.0, 0.814]
+	},
 
-$g.data.transmission.t56short = new $g.TransmissionModel({
-	gears: [2.66, 1.73, 1.3, 1.0, 0.8, 0.62]
-});
+];
 
-$g.data.engine.sbf347 = new $g.EngineModel({
-	dyno: new $g.DynoCollection([
-		new $g.DynoPointModel({torque: 0, rpm: 0}),
-		new $g.DynoPointModel({torque: 350, rpm: 1500}),
-		new $g.DynoPointModel({torque: 390, rpm: 4700}),
-		new $g.DynoPointModel({torque: 407, rpm: 5300}),
-		new $g.DynoPointModel({torque: 350, rpm: 6500}),
-		new $g.DynoPointModel({torque: 0, rpm: 7000})
-	])
-});
+var engines = [
+	{
+	name: "simple",
+	dyno: 
+[		{torque: 0, rpm: 0},
+		{torque: 350, rpm: 1500},
+		{torque: 390, rpm: 4700},
+		{torque: 407, rpm: 5300},
+		{torque: 350, rpm: 6500},
+		{torque: 0, rpm: 7000}
+	]
+	},	{
+	name: "danner's motor",
+	dyno: [
+		{torque: 0, rpm: 0},
+		{torque: 350, rpm: 1500},
+		{torque: 390, rpm: 4700},
+		{torque: 407, rpm: 5300},
+		{torque: 350, rpm: 6500},
+		{torque: 0, rpm: 7000}
+	]
+	},
 
-$g.data.drivetrain.custom = new $g.DrivetrainModel({
-	final: 3.07,
-	losses: 0.15
-});
+];
 
-$g.data.wheel.custom = new $g.WheelModel({
-	diameter: 25.7,
-	revs_per_mile: 808
-});
+var drivetrains = [
+	{
+		name: "8.8 torsen 2",
+		final_drive: 3.07,
+		losses: 0.15
+	},
+	{
+		name: "miata torsen",
+		final_drive: 4.1,
+		losses: 0.15
+	}
+];
+
+var wheels = [
+	{	
+		name: "cobra blah",
+		diameter: 25.7,
+		revs_per_mile: 808
+	},
+	{
+		name: "94 miata summer",
+		diameter: 21.7,
+		revs_per_mile: 930
+	}
+];
